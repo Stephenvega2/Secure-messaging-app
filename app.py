@@ -4,6 +4,7 @@ from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import base64
 import json
+import os
 from flask import Flask, request, jsonify
 import requests
 from kivy.app import App
@@ -241,8 +242,12 @@ class MainApp(App):
         return CryptoApp()
 
 if __name__ == '__main__':
-    # Start Flask in a separate thread for development only
-    flask_thread = threading.Thread(target=lambda: app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False), daemon=True)
+    # Start Flask in a separate thread for DEVELOPMENT ONLY
+    # For production, use a WSGI server like Gunicorn (e.g., `gunicorn -w 4 -b 127.0.0.1:5000 app:app`)
+    # Set FLASK_DEBUG=False in production to disable debug mode
+    debug = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'  # Default to False
+    host = os.getenv('FLASK_HOST', '127.0.0.1')  # Default to localhost
+    flask_thread = threading.Thread(target=lambda: app.run(debug=debug, host=host, port=5000, use_reloader=False), daemon=True)
     flask_thread.start()
     # Give Flask time to start
     time.sleep(1)
