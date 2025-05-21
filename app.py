@@ -130,7 +130,8 @@ class EncryptionTab(BoxLayout):
             return
         
         try:
-            response = requests.post('http://localhost:5000/encrypt', json={"message": message})
+            # Fixed: Added timeout=5
+            response = requests.post('http://localhost:5000/encrypt', json={"message": message}, timeout=5)
             if response.status_code == 200:
                 self.bundle = response.json()
                 self.result_label.text = f"Bundle:\n{json.dumps(self.bundle, indent=2)}"
@@ -138,6 +139,8 @@ class EncryptionTab(BoxLayout):
                 self.save_button.disabled = False
             else:
                 self.result_label.text = f"Error: {response.json().get('error', 'Unknown error')}"
+        except requests.Timeout:
+            self.result_label.text = "Error: Request timed out after 5 seconds"
         except requests.RequestException as e:
             self.result_label.text = f"Error: Failed to connect to server\n{str(e)}"
 
@@ -203,7 +206,8 @@ class DecryptionTab(BoxLayout):
     def decrypt(self, instance):
         try:
             bundle = json.loads(self.bundle_input.text)
-            response = requests.post('http://localhost:5000/decrypt', json=bundle)
+            # Fixed: Added timeout=5
+            response = requests.post('http://localhost:5000/decrypt', json=bundle, timeout=5)
             if response.status_code == 200:
                 result = response.json()
                 message = result['message']
@@ -214,6 +218,8 @@ class DecryptionTab(BoxLayout):
                     self.result_label.text += f"\nWarning: {warning}"
             else:
                 self.result_label.text = f"Error: {response.json().get('error', 'Unknown error')}"
+        except requests.Timeout:
+            self.result_label.text = "Error: Request timed out after 5 seconds"
         except (json.JSONDecodeError, requests.RequestException) as e:
             self.result_label.text = f"Error: Invalid bundle or server error\n{str(e)}"
 
@@ -234,12 +240,9 @@ class MainApp(App):
     def build(self):
         return CryptoApp()
 
-def run_flask():
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
-
 if __name__ == '__main__':
-    # Start Flask in a separate thread
-    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    # Start Flask in a separate thread for development only
+    flask_thread = threading.Thread(target=lambda: app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False), daemon=True)
     flask_thread.start()
     # Give Flask time to start
     time.sleep(1)
