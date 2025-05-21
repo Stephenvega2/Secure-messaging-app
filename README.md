@@ -1,0 +1,2 @@
+# Secure-messaging-app
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/aa5f643e4eeb46209c5032744abed2c2)](https://app.codacy.com/gh/Stephenvega2/Secure-messaging-app?utm_source=github.com&utm_medium=referral&utm_content=Stephenvega2/Secure-messaging-app&utm_campaign=Badge_Grade)
